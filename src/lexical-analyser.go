@@ -2,10 +2,119 @@ package main
 
 const eof byte = 0
 
-// Lexer converts source text into a stream of tokens.
+// ---------------------------------------------------------------------------
+// DFA definitions
+// ---------------------------------------------------------------------------
+
+// State represents a DFA state.
+type State int
+
+const (
+	StateStart     State = iota // initial state
+	StateAssign                 // seen '='
+	StateEq                     // seen '=='
+	StatePlus                   // seen '+'
+	StateMinus                  // seen '-'
+	StateInc                    // seen '++'
+	StateDec                    // seen '--'
+	StateSemiColon              // seen ';'
+	StateIdent                  // inside an identifier
+	StateInt                    // inside an integer literal
+	stateCount                  // sentinel – total number of states
+)
+
+// NoTransition signals that no valid transition exists.
+const NoTransition State = -1
+
+// CharClass groups input bytes into equivalence classes for the DFA.
+type CharClass int
+
+const (
+	ClassLetter    CharClass = iota // a-z A-Z _
+	ClassDigit                      // 0-9
+	ClassEquals                     // =
+	ClassPlus                       // +
+	ClassMinus                      // -
+	ClassSemiColon                  // ;
+	ClassOther                      // everything else
+	classCount                      // sentinel
+)
+
+// transition[state][charClass] → next state (NoTransition if none).
+var transition [stateCount][classCount]State
+
+// acceptToken[state] → token type emitted when this state is accepting.
+// A zero value (TokenIllegal) means the state is not accepting.
+var acceptToken [stateCount]TokenType
+
+func init() {
+	// Default every cell to NoTransition.
+	for s := range transition {
+		for c := range transition[s] {
+			transition[s][c] = NoTransition
+		}
+	}
+
+	// --- transitions from StateStart ---
+	transition[StateStart][ClassEquals] = StateAssign
+	transition[StateStart][ClassPlus] = StatePlus
+	transition[StateStart][ClassMinus] = StateMinus
+	transition[StateStart][ClassSemiColon] = StateSemiColon
+	transition[StateStart][ClassLetter] = StateIdent
+	transition[StateStart][ClassDigit] = StateInt
+
+	// --- multi-character operators ---
+	transition[StateAssign][ClassEquals] = StateEq // '=' then '=' → '=='
+	transition[StatePlus][ClassPlus] = StateInc    // '+' then '+' → '++'
+	transition[StateMinus][ClassMinus] = StateDec  // '-' then '-' → '--'
+
+	// --- identifiers: [A-Za-z_][A-Za-z0-9_]* ---
+	transition[StateIdent][ClassLetter] = StateIdent
+	transition[StateIdent][ClassDigit] = StateIdent
+
+	// --- integer literals: [0-9]+ ---
+	transition[StateInt][ClassDigit] = StateInt
+
+	// --- accepting states ---
+	acceptToken[StateAssign] = TokenAssign
+	acceptToken[StateEq] = TokenEq
+	acceptToken[StatePlus] = TokenPlus
+	acceptToken[StateMinus] = TokenMinus
+	acceptToken[StateInc] = TokenInc
+	acceptToken[StateDec] = TokenDec
+	acceptToken[StateSemiColon] = TokenSemiColon
+	acceptToken[StateIdent] = TokenIdent
+	acceptToken[StateInt] = TokenInt
+}
+
+// classify returns the character class for ch.
+func classify(ch byte) CharClass {
+	switch {
+	case isLetter(ch):
+		return ClassLetter
+	case isDigit(ch):
+		return ClassDigit
+	case ch == '=':
+		return ClassEquals
+	case ch == '+':
+		return ClassPlus
+	case ch == '-':
+		return ClassMinus
+	case ch == ';':
+		return ClassSemiColon
+	default:
+		return ClassOther
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Lexer
+// ---------------------------------------------------------------------------
+
+// Lexer converts source text into a stream of tokens using a table-driven DFA.
 type Lexer struct {
 	input        string
-	position     int  // index of current character in input
+	position     int  // index of current character
 	readPosition int  // index of next character to read
 	ch           byte // current character under examination
 	line         int
@@ -29,16 +138,22 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
-// peekChar returns the next character without advancing the lexer.
-func (l *Lexer) peekChar() byte {
-	if l.readPosition >= len(l.input) {
-		return eof
+// rewind repositions the lexer so that the next character to be examined is
+// at index pos.
+func (l *Lexer) rewind(pos int) {
+	if pos >= len(l.input) {
+		l.ch = eof
+		l.position = len(l.input)
+		l.readPosition = len(l.input)
+	} else {
+		l.ch = l.input[pos]
+		l.position = pos
+		l.readPosition = pos + 1
 	}
-	return l.input[l.readPosition]
 }
 
-// skipWhitespace consumes spaces, tabs, and newlines.
-// It also updates the current line counter when a newline is consumed.
+// skipWhitespace consumes spaces, tabs, and newlines, updating the line
+// counter when a newline is consumed.
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		if l.ch == '\n' {
@@ -48,95 +163,67 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-// makeToken builds a single-character token from the current character.
-func (l *Lexer) makeToken(tokenType TokenType) Token {
-	return Token{Type: tokenType, Lexeme: string(l.ch), Line: l.line}
-}
-
-// makeTokenFromPair builds a two-character token from the current and next character.
-// The lexer is advanced once to consume the second character.
-func (l *Lexer) makeTokenFromPair(tokenType TokenType) Token {
-	first := l.ch
-	l.readChar()
-	return Token{Type: tokenType, Lexeme: string(first) + string(l.ch), Line: l.line}
-}
-
-// nextToken scans and returns the next token in the input.
+// nextToken runs the DFA to scan and return the next token.
 func (l *Lexer) nextToken() Token {
 	l.skipWhitespace()
 
-	switch l.ch {
-	case '=':
-		if l.peekChar() == '=' {
-			tok := l.makeTokenFromPair(TokenEq)
-			l.readChar()
-			return tok
-		}
-
-		tok := l.makeToken(TokenAssign)
-		l.readChar()
-		return tok
-
-	case '+':
-		if l.peekChar() == '+' {
-			tok := l.makeTokenFromPair(TokenInc)
-			l.readChar()
-			return tok
-		}
-
-		tok := l.makeToken(TokenPlus)
-		l.readChar()
-		return tok
-
-	case ';':
-		tok := l.makeToken(TokenSemi)
-		l.readChar()
-		return tok
-
-	case eof:
+	// Handle EOF before entering the DFA.
+	if l.ch == eof {
 		return Token{Type: TokenEOF, Lexeme: "", Line: l.line}
+	}
 
-	default:
-		if isLetter(l.ch) {
-			lexeme := l.readIdentifier()
-			return Token{Type: LookupIdent(lexeme), Lexeme: lexeme, Line: l.line}
+	state := StateStart
+	startPos := l.position
+
+	// Track the last accepting state so we can implement longest-match.
+	lastAcceptPos := -1
+	var lastAcceptType TokenType
+
+	for {
+		class := classify(l.ch)
+		next := transition[state][class]
+		if next == NoTransition {
+			break
 		}
 
-		if isDigit(l.ch) {
-			lexeme := l.readNumber()
-			return Token{Type: TokenInt, Lexeme: lexeme, Line: l.line}
+		state = next
+		if acceptToken[state] != TokenIllegal {
+			lastAcceptPos = l.position
+			lastAcceptType = acceptToken[state]
 		}
+		l.readChar()
+	}
 
-		tok := l.makeToken(TokenIllegal)
+	// No accepting state was ever reached — illegal character.
+	if lastAcceptPos == -1 {
+		tok := Token{Type: TokenIllegal, Lexeme: string(l.input[startPos]), Line: l.line}
 		l.readChar()
 		return tok
 	}
-}
 
-// readIdentifier consumes an identifier: [A-Za-z_][A-Za-z0-9_]*
-func (l *Lexer) readIdentifier() string {
-	position := l.position
-	for isLetter(l.ch) || isDigit(l.ch) {
-		l.readChar()
+	// Rewind if the DFA consumed characters past the last accept.
+	if l.position > lastAcceptPos+1 {
+		l.rewind(lastAcceptPos + 1)
 	}
-	return l.input[position:l.position]
-}
 
-// readNumber consumes a decimal integer literal: [0-9]+
-func (l *Lexer) readNumber() string {
-	position := l.position
-	for isDigit(l.ch) {
-		l.readChar()
+	lexeme := l.input[startPos : lastAcceptPos+1]
+
+	// Resolve keywords for identifiers.
+	if lastAcceptType == TokenIdent {
+		lastAcceptType = LookupIdent(lexeme)
 	}
-	return l.input[position:l.position]
+
+	return Token{Type: lastAcceptType, Lexeme: lexeme, Line: l.line}
 }
 
-// isLetter reports whether ch is a valid identifier letter.
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
-// isDigit reports whether ch is an ASCII decimal digit.
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
@@ -145,7 +232,6 @@ func isDigit(ch byte) bool {
 func Tokenize(input string) []Token {
 	l := NewLexer(input)
 	var tokens []Token
-
 	for {
 		tok := l.nextToken()
 		tokens = append(tokens, tok)
