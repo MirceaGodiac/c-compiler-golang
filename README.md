@@ -10,7 +10,7 @@ The lexer takes C source code and breaks it into a stream of tokens using a **ta
 
 Instead of hand-written `switch` logic, the lexer defines:
 
-- **Character classes** that group input bytes into equivalence classes (letter, digit, `=`, `+`, `;`, other)
+- **Character classes** that group input bytes into equivalence classes (letter, digit, `=`, `+`, `-`, `;`, other)
 - **DFA states** representing progress through a token (e.g. `StateStart → StateAssign → StateEq`)
 - **A transition table** (`transition[state][charClass] → nextState`) initialized at startup
 - **An accept table** (`acceptToken[state] → TokenType`) mapping accepting states to token types
