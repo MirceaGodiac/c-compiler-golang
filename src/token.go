@@ -9,13 +9,38 @@ const (
 	TokenEOF
 	TokenIdent
 	TokenInt
-	TokenAssign // =
-	TokenEq     // ==
-	TokenPlus   // +
-	TokenInc    // ++
-	TokenSemi   // ;
-	TokenIntKw  // 'int' keyword
-	TokenReturn // 'return' keyword
+	TokenAssign           // =
+	TokenEq               // ==
+	TokenPlus             // +
+	TokenInc              // ++
+	TokenSemi             // ;
+	TokenIntKw            // 'int' keyword
+	TokenReturn           // 'return' keyword
+	TokenIf               // 'if' keyword
+	TokenLParen           // '('
+	TokenRParen           // ')'
+	TokenLBrace           // '{'
+	TokenRBrace           // '}'
+	TokenLT               // <
+	TokenGT               // >
+	TokenLE               // <=
+	TokenGE               // >=
+	TokenNE               // !=
+	TokenAnd              // &&
+	TokenOr               // ||
+	TokenNot              // !
+	TokenComma            // ,
+	TokenDot              // .
+	TokenColon            // :
+	TokenWhile            // 'while' keyword
+	TokenDo               // 'do' keyword
+	TokenFor              // 'for' keyword
+	TokenChar             // 'char' keyword
+	TokenCharLit          // character literal (e.g. 'a', '\n')
+	TokenStar             // *
+	TokenMinus            // -
+	TokenDec              // --
+
 )
 
 type Token struct {
@@ -27,6 +52,11 @@ type Token struct {
 var keywords = map[string]TokenType{
 	"int":    TokenIntKw,
 	"return": TokenReturn,
+	"if":     TokenIf,
+	"while":  TokenWhile,
+	"for":    TokenFor,
+	"char":   TokenChar,
+	"do":     TokenDo,
 }
 
 func LookupIdent(ident string) TokenType {

@@ -9,6 +9,16 @@ func main() {
 		if (main_var == 43) {
 			return 0;
 		}
+		char c = '\n';
+		for (int i = 0; i < 10; i++) {
+		return 0;
+}
+		while (c != 'a')
+		{
+			c = c + 1;
+		}
+		@#
+
 	`
 	// Note: Our lexer doesn't handle 'if', '(', ')', '{', '}' yet.
 	// Watch how it flags them as Illegal.
