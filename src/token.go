@@ -7,7 +7,7 @@ type TokenType int
 const (
 	TokenIllegal TokenType = iota
 	TokenEOF
-	TokenIdent         // \t
+	TokenIdent         // identifier (non-keyword)
 	TokenInt           // e.g. 123
 	TokenFloat         // e.g. 3.14
 	TokenString        // e.g. "hello"
