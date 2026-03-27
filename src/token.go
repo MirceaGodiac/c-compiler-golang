@@ -37,8 +37,6 @@ type Token struct {
 var keywords = map[string]TokenType{
 	"int":    TokenIntKeyword,
 	"float":  TokenFloatKeyword,
-	"string": TokenStringKeyword,
-	"var":    TokenVarKeyword,
 	"double": TokendoubleKeyword,
 	"if":     TokenIf,
 	"return": TokenReturn,
