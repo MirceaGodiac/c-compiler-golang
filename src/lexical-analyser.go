@@ -96,6 +96,76 @@ func (l *Lexer) nextToken() Token {
 	case eof:
 		return Token{Type: TokenEOF, Lexeme: "", Line: l.line}
 
+	case '(':
+		tok := l.makeToken(TokenLParen)
+		l.readChar()
+		return tok
+
+	case ')':
+		tok := l.makeToken(TokenRParen)
+		l.readChar()
+		return tok
+
+	case '{':
+		tok := l.makeToken(TokenLBrace)
+		l.readChar()
+		return tok
+
+	case '}':
+		tok := l.makeToken(TokenRBrace)
+		l.readChar()
+		return tok
+
+	case '-':
+		if l.peekChar() == '-' {
+			tok := l.makeTokenFromPair(TokenDec)
+			l.readChar()
+			return tok
+		}
+
+		tok := l.makeToken(TokenMinus)
+		l.readChar()
+		return tok
+
+	case '*':
+		tok := l.makeToken(TokenStar)
+		l.readChar()
+		return tok
+
+	case '<':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenLE)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenLT)
+		l.readChar()
+		return tok
+
+	case '>':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenGE)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenGT)
+		l.readChar()
+		return tok
+
+	case '!':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenNE)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenNot)
+		l.readChar()
+		return tok
+
+	case '\'':
+		tok := l.readCharLiteral()
+		return tok
+
 	default:
 		if isLetter(l.ch) {
 			lexeme := l.readIdentifier()
@@ -129,6 +199,50 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) readCharLiteral() Token {
+	startPos := l.position // at opening quote '
+	line := l.line
+
+	// consume opening quote
+	l.readChar()
+
+	// empty / newline / eof right after opening quote
+	if l.ch == eof || l.ch == '\n' || l.ch == '\r' || l.ch == '\'' {
+		if l.ch == '\'' {
+			l.readChar()
+		}
+		return Token{Type: TokenIllegal, Lexeme: l.input[startPos:l.position], Line: line}
+	}
+
+	// consume literal body (one char or one escape sequence)
+	if l.ch == '\\' {
+		l.readChar() // consume backslash
+		if l.ch == eof || l.ch == '\n' || l.ch == '\r' {
+			return Token{Type: TokenIllegal, Lexeme: l.input[startPos:l.position], Line: line}
+		}
+		l.readChar() // consume escaped char (e.g. n, ', \)
+	} else {
+		l.readChar() // consume normal char
+	}
+
+	// must close with '
+	if l.ch != '\'' {
+		for l.ch != eof && l.ch != '\n' && l.ch != '\r' && l.ch != '\'' {
+			l.readChar()
+		}
+		if l.ch == '\'' {
+			l.readChar()
+		}
+		return Token{Type: TokenIllegal, Lexeme: l.input[startPos:l.position], Line: line}
+	}
+
+	// consume closing quote
+	l.readChar()
+
+	// include quotes in lexeme
+	return Token{Type: TokenCharLit, Lexeme: l.input[startPos:l.position], Line: line}
 }
 
 // isLetter reports whether ch is a valid identifier letter.
