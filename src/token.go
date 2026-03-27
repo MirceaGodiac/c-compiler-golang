@@ -7,15 +7,25 @@ type TokenType int
 const (
 	TokenIllegal TokenType = iota
 	TokenEOF
-	TokenIdent
-	TokenInt
-	TokenAssign // =
-	TokenEq     // ==
-	TokenPlus   // +
-	TokenInc    // ++
-	TokenSemi   // ;
-	TokenIntKw  // 'int' keyword
-	TokenReturn // 'return' keyword
+	TokenIdent         // identifier (non-keyword)
+	TokenInt           // e.g. 123
+	TokenFloat         // e.g. 3.14
+	TokenString        // e.g. "hello"
+	TokenDouble        // e.g. 3.14e-10
+	TokenAssign        // =
+	TokenEq            // ==
+	TokenPlus          // +
+	TokenMinus         // -
+	TokenInc           // ++
+	TokenDec           // --
+	TokenSemiColon     // ;
+	TokenIntKeyword    // 'int' keyword
+	TokenFloatKeyword  // 'float' keyword
+	TokenStringKeyword // 'string' keyword
+	TokenVarKeyword    // 'var' keyword
+	TokendoubleKeyword // 'double' keyword
+	TokenIf            // 'if' keyword
+	TokenReturn        // 'return' keyword
 )
 
 type Token struct {
@@ -25,7 +35,10 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"int":    TokenIntKw,
+	"int":    TokenIntKeyword,
+	"float":  TokenFloatKeyword,
+	"double": TokendoubleKeyword,
+	"if":     TokenIf,
 	"return": TokenReturn,
 }
 
