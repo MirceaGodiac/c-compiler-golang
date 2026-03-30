@@ -10,8 +10,8 @@ The lexer takes C source code and breaks it into a stream of tokens using a **ta
 
 Instead of hand-written `switch` logic, the lexer defines:
 
-- **Character classes** that group input bytes into equivalence classes (letter, digit, `=`, `+`, `-`, `;`, other)
-- **DFA states** representing progress through a token (e.g. `StateStart → StateAssign → StateEq`)
+- **Character classes** that group input bytes into equivalence classes (letter, digit, operator symbols, punctuation, etc.)
+- **DFA states** representing progress through a token (e.g. `StateStart → StateLessThan → StateLessEq`)
 - **A transition table** (`transition[state][charClass] → nextState`) initialized at startup
 - **An accept table** (`acceptToken[state] → TokenType`) mapping accepting states to token types
 - **A driver loop** that runs the DFA with longest-match semantics and rewind support
@@ -22,13 +22,16 @@ Adding a new token requires only new states and table entries — no new control
 
 | Category | Tokens |
 |---|---|
-| Keywords | `int`, `float`, `string`, `var`, `double`, `if`, `return` |
-| Identifiers | variable and function names (e.g. `main_var`) |
-| Integer literals | decimal numbers (e.g. `42`) |
-| Operators | `=`, `==`, `+`, `++` |
+| Keywords | All 33 standard C keywords (`int`, `void`, `if`, `else`, `for`, `while`, `return`, `struct`, `typedef`, …) |
+| Identifiers | Variable and function names (e.g. `main_var`) |
+| Integer literals | Decimal numbers (e.g. `42`) |
+| Assignment | `=`, `==` |
+| Arithmetic | `+`, `-`, `*`, `/`, `%`, `++`, `--` |
+| Comparison | `<`, `<=`, `>`, `>=`, `==`, `!=` |
+| Logical | `!`, `&&`, `\|\|` |
+| Bitwise | `&`, `\|`, `^`, `~`, `<<`, `>>` |
+| Grouping | `(`, `)`, `{`, `}`, `[`, `]` |
 | Punctuation | `;` |
-
-Unrecognized characters (e.g. `(`, `)`, `{`, `}`) are flagged as illegal tokens.
 
 ## Project Structure
 
