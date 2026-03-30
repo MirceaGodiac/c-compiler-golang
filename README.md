@@ -25,7 +25,7 @@ Adding a new token requires only new states and table entries — no new control
 | Keywords | C keywords implemented in the lexer as defined in `src/token.go` (e.g. `int`, `void`, `if`, `else`, `for`, `while`, `return`, `struct`, `typedef`, …) |
 | Identifiers | Variable and function names (e.g. `main_var`) |
 | Integer literals | Decimal numbers (e.g. `42`) |
-| Assignment | `=`, `==` |
+| Assignment | `=` |
 | Arithmetic | `+`, `-`, `*`, `/`, `%`, `++`, `--` |
 | Comparison | `<`, `<=`, `>`, `>=`, `==`, `!=` |
 | Logical | `!`, `&&`, `\|\|` |
