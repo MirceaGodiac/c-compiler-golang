@@ -10,7 +10,6 @@ func main() {
 			return 0;
 		}
 	`
-	
 
 	tokens := Tokenize(sourceCode)
 
