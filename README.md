@@ -156,3 +156,10 @@ cd src
 go build -o c-lexer.exe
 ./c-lexer.exe
 ```
+
+## Linter Checks
+
+```bash
+    cd src // or wherever the code you want to idiot proof is...
+    golangci-lint run
+```
