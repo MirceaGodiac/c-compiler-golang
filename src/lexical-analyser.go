@@ -20,6 +20,29 @@ const (
 	StateSemiColon              // seen ';'
 	StateIdent                  // inside an identifier
 	StateInt                    // inside an integer literal
+	StateStar                   // seen '*'
+	StateSlash                  // seen '/'
+	StatePercent                // seen '%'
+	StateLessThan               // seen '<'
+	StateLessEq                 // seen '<='
+	StateLeftShift              // seen '<<'
+	StateGreaterThan            // seen '>'
+	StateGreaterEq              // seen '>='
+	StateRightShift             // seen '>>'
+	StateNot                    // seen '!'
+	StateNotEq                  // seen '!='
+	StateAmpersand              // seen '&'
+	StateAnd                    // seen '&&'
+	StatePipe                   // seen '|'
+	StateOr                     // seen '||'
+	StateCaret                  // seen '^'
+	StateTilde                  // seen '~'
+	StateLParen                 // seen '('
+	StateRParen                 // seen ')'
+	StateLBrace                 // seen '{'
+	StateRBrace                 // seen '}'
+	StateLBracket               // seen '['
+	StateRBracket               // seen ']'
 	stateCount                  // sentinel – total number of states
 )
 
@@ -30,14 +53,30 @@ const NoTransition State = -1
 type CharClass int
 
 const (
-	ClassLetter    CharClass = iota // a-z A-Z _
-	ClassDigit                      // 0-9
-	ClassEquals                     // =
-	ClassPlus                       // +
-	ClassMinus                      // -
-	ClassSemiColon                  // ;
-	ClassOther                      // everything else
-	classCount                      // sentinel
+	ClassLetter      CharClass = iota // a-z A-Z _
+	ClassDigit                        // 0-9
+	ClassEquals                       // =
+	ClassPlus                         // +
+	ClassMinus                        // -
+	ClassSemiColon                    // ;
+	ClassStar                         // *
+	ClassSlash                        // /
+	ClassPercent                      // %
+	ClassLessThan                     // <
+	ClassGreaterThan                  // >
+	ClassExclamation                  // !
+	ClassAmpersand                    // &
+	ClassPipe                         // |
+	ClassCaret                        // ^
+	ClassTilde                        // ~
+	ClassLParen                       // (
+	ClassRParen                       // )
+	ClassLBrace                       // {
+	ClassRBrace                       // }
+	ClassLBracket                     // [
+	ClassRBracket                     // ]
+	ClassOther                        // everything else
+	classCount                        // sentinel
 )
 
 // transition[state][charClass] → next state (NoTransition if none).
@@ -56,35 +95,81 @@ func init() {
 	}
 
 	// --- transitions from StateStart ---
-	transition[StateStart][ClassEquals] = StateAssign
-	transition[StateStart][ClassPlus] = StatePlus
-	transition[StateStart][ClassMinus] = StateMinus
-	transition[StateStart][ClassSemiColon] = StateSemiColon
-	transition[StateStart][ClassLetter] = StateIdent
-	transition[StateStart][ClassDigit] = StateInt
+	transition[StateStart][ClassEquals]       = StateAssign
+	transition[StateStart][ClassPlus]         = StatePlus
+	transition[StateStart][ClassMinus]        = StateMinus
+	transition[StateStart][ClassSemiColon]    = StateSemiColon
+	transition[StateStart][ClassLetter]       = StateIdent
+	transition[StateStart][ClassDigit]        = StateInt
+	transition[StateStart][ClassStar]         = StateStar
+	transition[StateStart][ClassSlash]        = StateSlash
+	transition[StateStart][ClassPercent]      = StatePercent
+	transition[StateStart][ClassLessThan]     = StateLessThan
+	transition[StateStart][ClassGreaterThan]  = StateGreaterThan
+	transition[StateStart][ClassExclamation]  = StateNot
+	transition[StateStart][ClassAmpersand]    = StateAmpersand
+	transition[StateStart][ClassPipe]         = StatePipe
+	transition[StateStart][ClassCaret]        = StateCaret
+	transition[StateStart][ClassTilde]        = StateTilde
+	transition[StateStart][ClassLParen]       = StateLParen
+	transition[StateStart][ClassRParen]       = StateRParen
+	transition[StateStart][ClassLBrace]       = StateLBrace
+	transition[StateStart][ClassRBrace]       = StateRBrace
+	transition[StateStart][ClassLBracket]     = StateLBracket
+	transition[StateStart][ClassRBracket]     = StateRBracket
 
 	// --- multi-character operators ---
-	transition[StateAssign][ClassEquals] = StateEq // '=' then '=' → '=='
-	transition[StatePlus][ClassPlus] = StateInc    // '+' then '+' → '++'
-	transition[StateMinus][ClassMinus] = StateDec  // '-' then '-' → '--'
+	transition[StateAssign][ClassEquals]          = StateEq          // '='  + '=' → '=='
+	transition[StatePlus][ClassPlus]              = StateInc         // '+'  + '+' → '++'
+	transition[StateMinus][ClassMinus]            = StateDec         // '-'  + '-' → '--'
+	transition[StateLessThan][ClassEquals]        = StateLessEq      // '<'  + '=' → '<='
+	transition[StateLessThan][ClassLessThan]      = StateLeftShift   // '<'  + '<' → '<<'
+	transition[StateGreaterThan][ClassEquals]     = StateGreaterEq   // '>'  + '=' → '>='
+	transition[StateGreaterThan][ClassGreaterThan] = StateRightShift // '>'  + '>' → '>>'
+	transition[StateNot][ClassEquals]             = StateNotEq       // '!'  + '=' → '!='
+	transition[StateAmpersand][ClassAmpersand]    = StateAnd         // '&'  + '&' → '&&'
+	transition[StatePipe][ClassPipe]              = StateOr          // '|'  + '|' → '||'
 
 	// --- identifiers: [A-Za-z_][A-Za-z0-9_]* ---
 	transition[StateIdent][ClassLetter] = StateIdent
-	transition[StateIdent][ClassDigit] = StateIdent
+	transition[StateIdent][ClassDigit]  = StateIdent
 
 	// --- integer literals: [0-9]+ ---
 	transition[StateInt][ClassDigit] = StateInt
 
 	// --- accepting states ---
-	acceptToken[StateAssign] = TokenAssign
-	acceptToken[StateEq] = TokenEq
-	acceptToken[StatePlus] = TokenPlus
-	acceptToken[StateMinus] = TokenMinus
-	acceptToken[StateInc] = TokenInc
-	acceptToken[StateDec] = TokenDec
-	acceptToken[StateSemiColon] = TokenSemiColon
-	acceptToken[StateIdent] = TokenIdent
-	acceptToken[StateInt] = TokenInt
+	acceptToken[StateAssign]      = TokenAssign
+	acceptToken[StateEq]          = TokenEq
+	acceptToken[StatePlus]        = TokenPlus
+	acceptToken[StateMinus]       = TokenMinus
+	acceptToken[StateInc]         = TokenInc
+	acceptToken[StateDec]         = TokenDec
+	acceptToken[StateSemiColon]   = TokenSemiColon
+	acceptToken[StateIdent]       = TokenIdent
+	acceptToken[StateInt]         = TokenInt
+	acceptToken[StateStar]        = TokenStar
+	acceptToken[StateSlash]       = TokenSlash
+	acceptToken[StatePercent]     = TokenPercent
+	acceptToken[StateLessThan]    = TokenLessThan
+	acceptToken[StateLessEq]      = TokenLessEq
+	acceptToken[StateLeftShift]   = TokenLeftShift
+	acceptToken[StateGreaterThan] = TokenGreaterThan
+	acceptToken[StateGreaterEq]   = TokenGreaterEq
+	acceptToken[StateRightShift]  = TokenRightShift
+	acceptToken[StateNot]         = TokenExclamation
+	acceptToken[StateNotEq]       = TokenNotEq
+	acceptToken[StateAmpersand]   = TokenAmpersand
+	acceptToken[StateAnd]         = TokenAnd
+	acceptToken[StatePipe]        = TokenPipe
+	acceptToken[StateOr]          = TokenOR
+	acceptToken[StateCaret]       = TokenCaret
+	acceptToken[StateTilde]       = TokenTilde
+	acceptToken[StateLParen]      = TokenLParen
+	acceptToken[StateRParen]      = TokenRParen
+	acceptToken[StateLBrace]      = TokenLBrace
+	acceptToken[StateRBrace]      = TokenRBrace
+	acceptToken[StateLBracket]    = TokenLBracket
+	acceptToken[StateRBracket]    = TokenRBracket
 }
 
 // classify returns the character class for ch.
@@ -102,6 +187,38 @@ func classify(ch byte) CharClass {
 		return ClassMinus
 	case ch == ';':
 		return ClassSemiColon
+	case ch == '*':
+		return ClassStar
+	case ch == '/':
+		return ClassSlash
+	case ch == '%':
+		return ClassPercent
+	case ch == '<':
+		return ClassLessThan
+	case ch == '>':
+		return ClassGreaterThan
+	case ch == '!':
+		return ClassExclamation
+	case ch == '&':
+		return ClassAmpersand
+	case ch == '|':
+		return ClassPipe
+	case ch == '^':
+		return ClassCaret
+	case ch == '~':
+		return ClassTilde
+	case ch == '(':
+		return ClassLParen
+	case ch == ')':
+		return ClassRParen
+	case ch == '{':
+		return ClassLBrace
+	case ch == '}':
+		return ClassRBrace
+	case ch == '[':
+		return ClassLBracket
+	case ch == ']':
+		return ClassRBracket
 	default:
 		return ClassOther
 	}
@@ -177,6 +294,7 @@ func (l *Lexer) nextToken() Token {
 
 	// Track the last accepting state so we can implement longest-match.
 	lastAcceptPos := -1
+	lastAcceptLine := l.line
 	var lastAcceptType TokenType
 
 	for {
@@ -189,6 +307,7 @@ func (l *Lexer) nextToken() Token {
 		state = next
 		if acceptToken[state] != TokenIllegal {
 			lastAcceptPos = l.position
+			lastAcceptLine = l.line
 			lastAcceptType = acceptToken[state]
 		}
 		l.readChar()
@@ -204,6 +323,7 @@ func (l *Lexer) nextToken() Token {
 	// Rewind if the DFA consumed characters past the last accept.
 	if l.position > lastAcceptPos+1 {
 		l.rewind(lastAcceptPos + 1)
+		l.line = lastAcceptLine
 	}
 
 	lexeme := l.input[startPos : lastAcceptPos+1]
@@ -213,7 +333,7 @@ func (l *Lexer) nextToken() Token {
 		lastAcceptType = LookupIdent(lexeme)
 	}
 
-	return Token{Type: lastAcceptType, Lexeme: lexeme, Line: l.line}
+	return Token{Type: lastAcceptType, Lexeme: lexeme, Line: lastAcceptLine}
 }
 
 // ---------------------------------------------------------------------------
