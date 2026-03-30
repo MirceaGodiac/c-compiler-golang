@@ -19,6 +19,30 @@ const (
 	TokenInc     // ++
 	TokenDec     // --
 	TokenSemiColon // ;
+	TokenStar    // *
+	TokenSlash   // /
+	TokenPercent // %
+	TokenLessThan   // <
+	TokenGreaterThan   // > 
+	TokenLessEq // <=
+	TokenGreaterEq // >=
+	TokenNotEq // !=
+	TokenAmpersand // &
+	TokenAnd     // &&
+	TokenPipe	  // |
+	TokenOR 	  // ||
+	TokenExclamation // !
+	TokenCaret   // ^
+	TokenTilde   // ~
+	TokenLParen  // (
+	TokenRParen  // )
+	TokenLBrace  // {
+	TokenRBrace  // }
+	TokenLBracket // [
+	TokenRBracket // ]
+	TokenLeftShift  // <<
+	TokenRightShift // >>
+
 	// C keywords
 	TokenAuto     // 'auto'
 	TokenBreak    // 'break'
