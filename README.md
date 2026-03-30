@@ -2,6 +2,33 @@
 
 A C compiler written from scratch in Go. Currently implements the **lexer** (lexical analysis) stage.
 
+## Linter Setup
+
+This project uses [golangci-lint](https://golangci-lint.run) and runs it automatically on every `git commit` via a pre-commit hook.
+
+### Install golangci-lint
+
+```sh
+cd src && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
+Then add the Go binary directory to your PATH (add this to `~/.bashrc` or `~/.zshrc`):
+
+```sh
+export PATH="$PATH:$HOME/go/bin"
+```
+
+### Run manually
+
+```sh
+cd src
+golangci-lint run --config ../.golang-CI.yml ./...
+```
+
+The pre-commit hook runs this automatically and blocks the commit if any issues are found.
+
+---
+
 ## What's Implemented
 
 ### Lexer
