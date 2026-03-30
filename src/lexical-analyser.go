@@ -310,9 +310,6 @@ func (l *Lexer) nextToken() Token {
 			lastAcceptLine = l.line
 			lastAcceptType = acceptToken[state]
 		}
-		if l.ch == '\n' {
-			l.line++
-		}
 		l.readChar()
 	}
 
