@@ -9,9 +9,12 @@ func main() {
 		if (main_var == 43) {
 			return 0;
 		}
+
+		for (int i = 0; i < 10; i++) {
+			return i;
+		}
+		return 0;
 	`
-	// Note: Our lexer doesn't handle 'if', '(', ')', '{', '}' yet.
-	// Watch how it flags them as Illegal.
 
 	tokens := Tokenize(sourceCode)
 
