@@ -9,6 +9,11 @@ func main() {
 		if (main_var == 43) {
 			return 0;
 		}
+
+		for (int i = 0; i < 10; i++) {
+			return i;
+		}
+		return 0;
 	`
 
 	tokens := Tokenize(sourceCode)
