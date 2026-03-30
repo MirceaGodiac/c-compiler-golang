@@ -10,8 +10,7 @@ func main() {
 			return 0;
 		}
 	`
-	// Note: Our lexer doesn't handle 'if', '(', ')', '{', '}' yet.
-	// Watch how it flags them as Illegal.
+	
 
 	tokens := Tokenize(sourceCode)
 
