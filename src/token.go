@@ -13,9 +13,52 @@ const (
 	TokenEq     // ==
 	TokenPlus   // +
 	TokenInc    // ++
+	TokenMinus  // -
+	TokenDec    // --
+	TokenArrow  // ->
+	TokenStar   // *
+	TokenSlash  // /
+	TokenPercent // %
+	TokenLt     // <
+	TokenLtEq   // <=
+	TokenGt     // >
+	TokenGtEq   // >=
+	TokenBang   // !
+	TokenNotEq  // !=
+	TokenAmp    // &
+	TokenAnd    // &&
+	TokenPipe   // |
+	TokenOr     // ||
 	TokenSemi   // ;
-	TokenIntKw  // 'int' keyword
-	TokenReturn // 'return' keyword
+	TokenComma  // ,
+	TokenDot    // .
+	TokenLParen // (
+	TokenRParen // )
+	TokenLBrace // {
+	TokenRBrace // }
+	TokenLBrack // [
+	TokenRBrack // ]
+	// keywords
+	TokenIntKw    // 'int'
+	TokenReturn   // 'return'
+	TokenIf       // 'if'
+	TokenElse     // 'else'
+	TokenWhile    // 'while'
+	TokenFor      // 'for'
+	TokenDo       // 'do'
+	TokenVoid     // 'void'
+	TokenChar     // 'char'
+	TokenFloat    // 'float'
+	TokenDouble   // 'double'
+	TokenLong     // 'long'
+	TokenShort    // 'short'
+	TokenBreak    // 'break'
+	TokenContinue // 'continue'
+	TokenStruct   // 'struct'
+	TokenSwitch   // 'switch'
+	TokenCase     // 'case'
+	TokenDefault  // 'default'
+	TokenSizeof   // 'sizeof'
 )
 
 type Token struct {
@@ -25,8 +68,26 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"int":    TokenIntKw,
-	"return": TokenReturn,
+	"int":      TokenIntKw,
+	"return":   TokenReturn,
+	"if":       TokenIf,
+	"else":     TokenElse,
+	"while":    TokenWhile,
+	"for":      TokenFor,
+	"do":       TokenDo,
+	"void":     TokenVoid,
+	"char":     TokenChar,
+	"float":    TokenFloat,
+	"double":   TokenDouble,
+	"long":     TokenLong,
+	"short":    TokenShort,
+	"break":    TokenBreak,
+	"continue": TokenContinue,
+	"struct":   TokenStruct,
+	"switch":   TokenSwitch,
+	"case":     TokenCase,
+	"default":  TokenDefault,
+	"sizeof":   TokenSizeof,
 }
 
 func LookupIdent(ident string) TokenType {

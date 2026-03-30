@@ -72,7 +72,6 @@ func (l *Lexer) nextToken() Token {
 			l.readChar()
 			return tok
 		}
-
 		tok := l.makeToken(TokenAssign)
 		l.readChar()
 		return tok
@@ -83,13 +82,132 @@ func (l *Lexer) nextToken() Token {
 			l.readChar()
 			return tok
 		}
-
 		tok := l.makeToken(TokenPlus)
+		l.readChar()
+		return tok
+
+	case '-':
+		if l.peekChar() == '-' {
+			tok := l.makeTokenFromPair(TokenDec)
+			l.readChar()
+			return tok
+		}
+		if l.peekChar() == '>' {
+			tok := l.makeTokenFromPair(TokenArrow)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenMinus)
+		l.readChar()
+		return tok
+
+	case '*':
+		tok := l.makeToken(TokenStar)
+		l.readChar()
+		return tok
+
+	case '/':
+		tok := l.makeToken(TokenSlash)
+		l.readChar()
+		return tok
+
+	case '%':
+		tok := l.makeToken(TokenPercent)
+		l.readChar()
+		return tok
+
+	case '<':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenLtEq)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenLt)
+		l.readChar()
+		return tok
+
+	case '>':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenGtEq)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenGt)
+		l.readChar()
+		return tok
+
+	case '!':
+		if l.peekChar() == '=' {
+			tok := l.makeTokenFromPair(TokenNotEq)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenBang)
+		l.readChar()
+		return tok
+
+	case '&':
+		if l.peekChar() == '&' {
+			tok := l.makeTokenFromPair(TokenAnd)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenAmp)
+		l.readChar()
+		return tok
+
+	case '|':
+		if l.peekChar() == '|' {
+			tok := l.makeTokenFromPair(TokenOr)
+			l.readChar()
+			return tok
+		}
+		tok := l.makeToken(TokenPipe)
 		l.readChar()
 		return tok
 
 	case ';':
 		tok := l.makeToken(TokenSemi)
+		l.readChar()
+		return tok
+
+	case ',':
+		tok := l.makeToken(TokenComma)
+		l.readChar()
+		return tok
+
+	case '.':
+		tok := l.makeToken(TokenDot)
+		l.readChar()
+		return tok
+
+	case '(':
+		tok := l.makeToken(TokenLParen)
+		l.readChar()
+		return tok
+
+	case ')':
+		tok := l.makeToken(TokenRParen)
+		l.readChar()
+		return tok
+
+	case '{':
+		tok := l.makeToken(TokenLBrace)
+		l.readChar()
+		return tok
+
+	case '}':
+		tok := l.makeToken(TokenRBrace)
+		l.readChar()
+		return tok
+
+	case '[':
+		tok := l.makeToken(TokenLBrack)
+		l.readChar()
+		return tok
+
+	case ']':
+		tok := l.makeToken(TokenRBrack)
 		l.readChar()
 		return tok
 
