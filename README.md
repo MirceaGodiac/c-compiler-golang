@@ -61,6 +61,22 @@ Rather than branching on every possible byte value, input characters are first m
 | `ClassPlus` | `+` |
 | `ClassMinus` | `-` |
 | `ClassSemiColon` | `;` |
+| `ClassStar` | `*` |
+| `ClassSlash` | `/` |
+| `ClassPercent` | `%` |
+| `ClassLessThan` | `<` |
+| `ClassGreaterThan` | `>` |
+| `ClassExclamation` | `!` |
+| `ClassAmpersand` | `&` |
+| `ClassPipe` | `\|` |
+| `ClassCaret` | `^` |
+| `ClassTilde` | `~` |
+| `ClassLParen` | `(` |
+| `ClassRParen` | `)` |
+| `ClassLBrace` | `{` |
+| `ClassRBrace` | `}` |
+| `ClassLBracket` | `[` |
+| `ClassRBracket` | `]` |
 | `ClassOther` | anything else |
 
 This keeps the transition table small: `stateCount × classCount` cells instead of `stateCount × 256`.
@@ -81,6 +97,29 @@ Each state represents a point in recognizing a token:
 | `StateSemiColon` | Seen `;` |
 | `StateIdent` | Inside an identifier `[A-Za-z_][A-Za-z0-9_]*` |
 | `StateInt` | Inside an integer literal `[0-9]+` |
+| `StateStar` | Seen `*` |
+| `StateSlash` | Seen `/` |
+| `StatePercent` | Seen `%` |
+| `StateLessThan` | Seen `<` |
+| `StateLessEq` | Seen `<=` |
+| `StateLeftShift` | Seen `<<` |
+| `StateGreaterThan` | Seen `>` |
+| `StateGreaterEq` | Seen `>=` |
+| `StateRightShift` | Seen `>>` |
+| `StateNot` | Seen `!` |
+| `StateNotEq` | Seen `!=` |
+| `StateAmpersand` | Seen `&` |
+| `StateAnd` | Seen `&&` |
+| `StatePipe` | Seen `\|` |
+| `StateOr` | Seen `\|\|` |
+| `StateCaret` | Seen `^` |
+| `StateTilde` | Seen `~` |
+| `StateLParen` | Seen `(` |
+| `StateRParen` | Seen `)` |
+| `StateLBrace` | Seen `{` |
+| `StateRBrace` | Seen `}` |
+| `StateLBracket` | Seen `[` |
+| `StateRBracket` | Seen `]` |
 
 ### 3. Transition Table
 
@@ -94,9 +133,32 @@ Each state represents a point in recognizing a token:
 | `StateStart` | `ClassPlus` | `StatePlus` |
 | `StateStart` | `ClassMinus` | `StateMinus` |
 | `StateStart` | `ClassSemiColon` | `StateSemiColon` |
+| `StateStart` | `ClassStar` | `StateStar` |
+| `StateStart` | `ClassSlash` | `StateSlash` |
+| `StateStart` | `ClassPercent` | `StatePercent` |
+| `StateStart` | `ClassLessThan` | `StateLessThan` |
+| `StateStart` | `ClassGreaterThan` | `StateGreaterThan` |
+| `StateStart` | `ClassExclamation` | `StateNot` |
+| `StateStart` | `ClassAmpersand` | `StateAmpersand` |
+| `StateStart` | `ClassPipe` | `StatePipe` |
+| `StateStart` | `ClassCaret` | `StateCaret` |
+| `StateStart` | `ClassTilde` | `StateTilde` |
+| `StateStart` | `ClassLParen` | `StateLParen` |
+| `StateStart` | `ClassRParen` | `StateRParen` |
+| `StateStart` | `ClassLBrace` | `StateLBrace` |
+| `StateStart` | `ClassRBrace` | `StateRBrace` |
+| `StateStart` | `ClassLBracket` | `StateLBracket` |
+| `StateStart` | `ClassRBracket` | `StateRBracket` |
 | `StateAssign` | `ClassEquals` | `StateEq` |
 | `StatePlus` | `ClassPlus` | `StateInc` |
 | `StateMinus` | `ClassMinus` | `StateDec` |
+| `StateLessThan` | `ClassEquals` | `StateLessEq` |
+| `StateLessThan` | `ClassLessThan` | `StateLeftShift` |
+| `StateGreaterThan` | `ClassEquals` | `StateGreaterEq` |
+| `StateGreaterThan` | `ClassGreaterThan` | `StateRightShift` |
+| `StateNot` | `ClassEquals` | `StateNotEq` |
+| `StateAmpersand` | `ClassAmpersand` | `StateAnd` |
+| `StatePipe` | `ClassPipe` | `StateOr` |
 | `StateIdent` | `ClassLetter` | `StateIdent` |
 | `StateIdent` | `ClassDigit` | `StateIdent` |
 | `StateInt` | `ClassDigit` | `StateInt` |
@@ -116,6 +178,29 @@ When the DFA enters an accepting state, that state maps to the token it produces
 | `StateSemiColon` | `TokenSemiColon` (`;`) |
 | `StateIdent` | `TokenIdent` (or a keyword — see below) |
 | `StateInt` | `TokenInt` |
+| `StateStar` | `TokenStar` (`*`) |
+| `StateSlash` | `TokenSlash` (`/`) |
+| `StatePercent` | `TokenPercent` (`%`) |
+| `StateLessThan` | `TokenLessThan` (`<`) |
+| `StateLessEq` | `TokenLessEq` (`<=`) |
+| `StateLeftShift` | `TokenLeftShift` (`<<`) |
+| `StateGreaterThan` | `TokenGreaterThan` (`>`) |
+| `StateGreaterEq` | `TokenGreaterEq` (`>=`) |
+| `StateRightShift` | `TokenRightShift` (`>>`) |
+| `StateNot` | `TokenExclamation` (`!`) |
+| `StateNotEq` | `TokenNotEq` (`!=`) |
+| `StateAmpersand` | `TokenAmpersand` (`&`) |
+| `StateAnd` | `TokenAnd` (`&&`) |
+| `StatePipe` | `TokenPipe` (`\|`) |
+| `StateOr` | `TokenOR` (`\|\|`) |
+| `StateCaret` | `TokenCaret` (`^`) |
+| `StateTilde` | `TokenTilde` (`~`) |
+| `StateLParen` | `TokenLParen` (`(`) |
+| `StateRParen` | `TokenRParen` (`)`) |
+| `StateLBrace` | `TokenLBrace` (`{`) |
+| `StateRBrace` | `TokenRBrace` (`}`) |
+| `StateLBracket` | `TokenLBracket` (`[`) |
+| `StateRBracket` | `TokenRBracket` (`]`) |
 
 `StateStart` and `NoTransition` are **not** accepting — hitting them without a prior accept means an illegal character.
 
@@ -160,8 +245,12 @@ When the DFA accepts an identifier (`TokenIdent`), the lexeme is looked up in th
 | Keywords | All 33 C standard keywords (see above) |
 | Identifiers | variable and function names (e.g. `main_var`) |
 | Integer literals | decimal numbers (e.g. `42`) |
-| Operators | `=` `==` `+` `++` `-` `--` |
-| Punctuation | `;` |
+| Arithmetic operators | `=` `==` `+` `++` `-` `--` `*` `/` `%` |
+| Comparison operators | `<` `<=` `>` `>=` `!=` |
+| Shift operators | `<<` `>>` |
+| Logical operators | `!` `&&` `\|\|` |
+| Bitwise operators | `&` `\|` `^` `~` |
+| Punctuation | `;` `(` `)` `{` `}` `[` `]` |
 
 Unrecognized characters are flagged as `TokenIllegal`.
 
